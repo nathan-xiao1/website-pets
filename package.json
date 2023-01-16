@@ -1,0 +1,37 @@
+{
+  "name": "website-pets",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "build": "webpack --config webpack.config.ts",
+    "start": "webpack serve --open",
+    "watch": "webpack --watch",
+    "prettier": "prettier --write src/**/*.ts",
+    "eslint": "eslint .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^18.11.18",
+    "@typescript-eslint/eslint-plugin": "^5.48.1",
+    "@typescript-eslint/parser": "^5.48.1",
+    "css-loader": "^6.7.3",
+    "eslint": "^8.32.0",
+    "eslint-plugin-import": "^2.27.4",
+    "html-webpack-plugin": "^5.5.0",
+    "prettier": "^2.8.3",
+    "sass": "^1.57.1",
+    "sass-loader": "^13.2.0",
+    "style-loader": "^3.3.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.4",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1",
+    "webpack-dev-server": "^4.11.1"
+  },
+  "dependencies": {
+    "ts-loader": "^9.4.2"
+  }
+}
