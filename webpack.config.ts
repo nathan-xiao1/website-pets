@@ -4,7 +4,7 @@ import type { Configuration } from 'webpack';
 import type { Configuration as DevServerConfiguration } from 'webpack-dev-server';
 
 const devServerConfig: DevServerConfiguration = {
-  static: './dist',
+  static: ['./src/assets'],
 };
 
 const config: Configuration = {

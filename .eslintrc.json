@@ -8,6 +8,7 @@
     "plugin:@typescript-eslint/recommended",
     "plugin:import/recommended"
   ],
+  "ignorePatterns": ["./dist/*"],
   "overrides": [],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -18,8 +19,10 @@
   "rules": {
     "@typescript-eslint/consistent-type-imports": "error",
     "@typescript-eslint/explicit-function-return-type": "error",
-    "@typescript-eslint/no-unused-vars": "error",
-    "indent": ["error", 2],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
+    ],
     "linebreak-style": ["error", "unix"],
     "quotes": ["error", "single"],
     "semi": ["error", "always"],
