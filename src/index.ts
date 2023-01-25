@@ -1,4 +1,4 @@
-import { createEntity } from './models/Entity';
+import { Ninja } from './models/entites/Ninja';
 import { World } from './models/World';
 
 import './styles/index.scss';
@@ -12,8 +12,8 @@ const container = document.getElementById('main-container');
 // div.src = sprite_idle;
 // container?.appendChild(div);
 
-const entity = createEntity();
-container?.appendChild(entity.element);
+const ninja = Ninja();
+container?.appendChild(ninja.element);
 
 const barrier = document.createElement('div');
 barrier.classList.add('collidable');
@@ -25,6 +25,6 @@ barrier.style.left = '600px';
 barrier.style.background = 'white';
 container?.appendChild(barrier);
 
-const world = new World(entity);
+const world = new World(ninja);
 
 world.start();

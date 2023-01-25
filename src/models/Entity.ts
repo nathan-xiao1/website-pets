@@ -2,37 +2,31 @@ import { State, StateSprite } from './State';
 import { Key } from './World';
 import type { WorldInfo } from './World';
 
-export function createEntity(): Entity {
-  const element = document.createElement('img');
-  element.style.position = 'absolute';
-
-  return new Entity(element, 0, 150);
-}
-
 export class Entity {
-  private yAcc = 0;
+  private _yAcc = 0;
   private _state: State = State.IDLE;
 
   private keyAction: Record<Key, State> = {
     [Key.UP]: State.MOVE_UP,
-    [Key.DOWN]: State.MOVE_DOWN,
+    [Key.DOWN]: State.IDLE,
     [Key.LEFT]: State.MOVE_LEFT,
     [Key.RIGHT]: State.MOVE_RIGHT,
   };
 
   constructor(
     private _element: HTMLImageElement,
+    private _spriteDirectory: string,
     private _left: number = 0,
     private _top: number = 0,
-    private _height: number = 95,
-    private _width: number = 135,
+    private _height: number = 100,
+    private _width: number = 100,
     private _speed: number = 6
   ) {
     this.setState(new Set([State.IDLE]));
     this.top = _top;
     this.left = _left;
-    this.height = 100;
-    this.width = 100;
+    this.height = _height;
+    this.width = _width;
   }
 
   // Prevent external modification of style
@@ -92,14 +86,13 @@ export class Entity {
     // Set state with priority
     const statePriority: State[] = [
       State.MOVE_UP,
-      State.MOVE_DOWN,
       State.MOVE_LEFT,
       State.MOVE_RIGHT,
     ];
 
     // Set the state with the highest priority state if
     // one exists
-    const notIdle = statePriority.some((state) => {
+    const idle = !statePriority.some((state) => {
       if (states.has(state)) {
         // Only set the state if it is different to
         // the existing state
@@ -113,17 +106,24 @@ export class Entity {
     });
 
     // No state passed in, so default to idle state
-    if (!notIdle) {
-      this._state = State.IDLE;
-      this._setStateSprite(this._state);
+    if (idle) {
+      let newState = State.IDLE;
+      if (this._yAcc !== 0) {
+        newState = State.FALL;
+      }
+
+      if (this._state !== newState) {
+        this._state = newState;
+        this._setStateSprite(newState);
+      }
     }
   }
 
   public move(states: Set<State>, worldInfo: WorldInfo): void {
-    this.yAcc = Math.max(this.yAcc - 0.5, -10);
+    this._yAcc = Math.max(this._yAcc - 0.5, -10);
 
     let dX = 0;
-    let dY = -this.yAcc;
+    let dY = -this._yAcc;
 
     // Calculate the new position delta
     states.forEach((state) => {
@@ -137,9 +137,6 @@ export class Entity {
         case State.MOVE_UP:
           dY = -this._speed;
           break;
-        case State.MOVE_DOWN:
-          dY = this._speed;
-          break;
         case State.IDLE:
         default:
           break;
@@ -148,6 +145,12 @@ export class Entity {
 
     // Move if the new positioFn is valid
     const { left, top } = worldInfo.getAdjustedPosition(this._element, dX, dY);
+
+    if (this.top === top) {
+      this._yAcc = 0;
+    }
+
+    // Set the new position
     this.left = left;
     this.top = top;
   }
@@ -157,27 +160,16 @@ export class Entity {
   /* ------------------------------------------------------ */
 
   private _setStateSprite(state: State): void {
-    let stateSprite;
-    switch (state) {
-      case State.MOVE_LEFT:
-        this._setDirection('left');
-        stateSprite = StateSprite.MOVE_HORIZONTAL;
-        break;
-      case State.MOVE_RIGHT:
-        this._setDirection('right');
-        stateSprite = StateSprite.MOVE_HORIZONTAL;
-        break;
-      case State.MOVE_UP:
-      case State.MOVE_DOWN:
-        stateSprite = StateSprite.MOVE_VERTICAL;
-        break;
-      case State.IDLE:
-      default:
-        stateSprite = StateSprite.IDLE;
-        break;
+    const stateSprite = StateSprite[state];
+
+    // Set the sprite direction since we use the same sprite
+    if (state === State.MOVE_LEFT) {
+      this._setDirection('left');
+    } else if (state === State.MOVE_RIGHT) {
+      this._setDirection('right');
     }
 
-    this._element.src = `sprites/ninja/${stateSprite}.gif`;
+    this._element.src = `${this._spriteDirectory}${stateSprite}.gif`;
   }
 
   private _setDirection(direction: 'left' | 'right'): void {

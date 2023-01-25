@@ -134,7 +134,7 @@ export class World {
           0
         : isOutsideWorldBottom
         ? // Outside of bottom boundary
-          World.getWorldHeight() - elementRect.height - 1
+          World.getWorldHeight() - elementRect.height
         : // Not outside - allow movement
           elementRect.top + dY;
 
