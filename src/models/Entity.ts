@@ -4,6 +4,9 @@ import type { WorldInfo } from './World';
 
 export class Entity {
   private _yAcc = 0;
+  private _yAccDisabled = false;
+
+  private _element: HTMLImageElement;
   private _state: State = State.IDLE;
 
   private keyAction: Record<Key, State> = {
@@ -14,7 +17,6 @@ export class Entity {
   };
 
   constructor(
-    private _element: HTMLImageElement,
     private _spriteDirectory: string,
     private _left: number = 0,
     private _top: number = 0,
@@ -22,12 +24,23 @@ export class Entity {
     private _width: number = 100,
     private _speed: number = 6
   ) {
-    this.setState(new Set([State.IDLE]));
+    const element = document.createElement('img');
+    element.style.position = 'absolute';
+    element.style.zIndex = '1000';
+
+    this._element = element;
     this.top = _top;
     this.left = _left;
     this.height = _height;
     this.width = _width;
+
+    this.setState(new Set([State.IDLE]));
+    this.enableDragAndDrop();
   }
+
+  /* ------------------------------------------------------ */
+  /*                   Getters and Setters                  */
+  /* ------------------------------------------------------ */
 
   // Prevent external modification of style
   public get element(): Readonly<HTMLImageElement> {
@@ -108,10 +121,14 @@ export class Entity {
     // No state passed in, so default to idle state
     if (idle) {
       let newState = State.IDLE;
+
+      // Use falling state if falling
       if (this._yAcc !== 0) {
         newState = State.FALL;
       }
 
+      // Only set the state if it is different to
+      // the existing state
       if (this._state !== newState) {
         this._state = newState;
         this._setStateSprite(newState);
@@ -120,7 +137,7 @@ export class Entity {
   }
 
   public move(states: Set<State>, worldInfo: WorldInfo): void {
-    this._yAcc = Math.max(this._yAcc - 0.5, -10);
+    this._yAcc = !this._yAccDisabled ? Math.max(this._yAcc - 0.5, -10) : 0;
 
     let dX = 0;
     let dY = -this._yAcc;
@@ -146,6 +163,7 @@ export class Entity {
     // Move if the new positioFn is valid
     const { left, top } = worldInfo.getAdjustedPosition(this._element, dX, dY);
 
+    // Didn't move vertically, so can reset y-acceleration
     if (this.top === top) {
       this._yAcc = 0;
     }
@@ -153,6 +171,34 @@ export class Entity {
     // Set the new position
     this.left = left;
     this.top = top;
+  }
+
+  public enableDragAndDrop(): void {
+    this._element.ondragstart = (): boolean => {
+      return false;
+    };
+    const moveTo = (pageX: number, pageY: number): void => {
+      this.left = pageX - this._element.offsetWidth / 2;
+      this.top = pageY - this._element.offsetHeight / 2;
+    };
+
+    const mouseDownHandler = (event: MouseEvent): void => {
+      this._yAccDisabled = true;
+      moveTo(event.pageX, event.pageY);
+      this._element.addEventListener('mousemove', mouseMoveHandler);
+    };
+
+    const mouseMoveHandler = (event: MouseEvent): void => {
+      moveTo(event.pageX, event.pageY);
+    };
+
+    const mouseUpHandler = (_event: MouseEvent): void => {
+      this._yAccDisabled = false;
+      this._element.removeEventListener('mousemove', mouseMoveHandler);
+    };
+
+    this._element.addEventListener('mousedown', mouseDownHandler);
+    this._element.addEventListener('mouseup', mouseUpHandler);
   }
 
   /* ------------------------------------------------------ */

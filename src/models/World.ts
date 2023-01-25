@@ -168,6 +168,13 @@ export class World {
         elementRect.top >= collidingWithRect.bottom ||
         elementRect.bottom <= collidingWithRect.top;
 
+      if (!isOutsideHorizontally && !isOutsideVertically) {
+        return {
+          left: elementRect.left,
+          top: collidingWithRect.top - elementRect.height,
+        };
+      }
+
       // Return position outside the collidable element
       return {
         left: elementRect.left + (isOutsideVertically ? dX : 0),
