@@ -10,6 +10,7 @@ export function createEntity(): Entity {
 }
 
 export class Entity {
+  private yAcc = 0;
   private _state: State = State.IDLE;
 
   private keyAction: Record<Key, State> = {
@@ -119,8 +120,10 @@ export class Entity {
   }
 
   public move(states: Set<State>, worldInfo: WorldInfo): void {
+    this.yAcc = Math.max(this.yAcc - 0.5, -10);
+
     let dX = 0;
-    let dY = 0;
+    let dY = -this.yAcc;
 
     // Calculate the new position delta
     states.forEach((state) => {
@@ -143,11 +146,10 @@ export class Entity {
       }
     });
 
-    // Move if the new position is valid
-    if (worldInfo.canMove(this._element, dX, dY)) {
-      this.left = this.left + dX;
-      this.top = this.top + dY;
-    }
+    // Move if the new positioFn is valid
+    const { left, top } = worldInfo.getAdjustedPosition(this._element, dX, dY);
+    this.left = left;
+    this.top = top;
   }
 
   /* ------------------------------------------------------ */

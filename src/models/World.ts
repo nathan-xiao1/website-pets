@@ -11,7 +11,16 @@ export interface WorldInfo {
   keyPressed: Set<Key>;
   worldHeight: number;
   worldWidth: number;
-  canMove: (element: HTMLElement, dX: number, dY: number) => boolean;
+  getAdjustedPosition: (
+    element: HTMLElement,
+    dX: number,
+    dY: number
+  ) => Position;
+}
+
+export interface Position {
+  left: number;
+  top: number;
 }
 
 export class World {
@@ -45,7 +54,7 @@ export class World {
       keyPressed: this.keyPressed,
       worldHeight: World.getWorldHeight(),
       worldWidth: World.getWorldWidth(),
-      canMove: this.canMove.bind(this),
+      getAdjustedPosition: this.getAdjustedPosition.bind(this),
     };
 
     this._mainEntity.tick(worldInfo);
@@ -67,10 +76,6 @@ export class World {
       case 'ArrowUp':
         this.keyPressed.add(Key.UP);
         break;
-      case 'Down':
-      case 'ArrowDown':
-        this.keyPressed.add(Key.DOWN);
-        break;
       default:
         return;
     }
@@ -90,31 +95,54 @@ export class World {
       case 'ArrowUp':
         this.keyPressed.delete(Key.UP);
         break;
-      case 'Down':
-      case 'ArrowDown':
-        this.keyPressed.delete(Key.DOWN);
-        break;
       default:
         return;
     }
   }
 
-  canMove(element: HTMLElement, dX: number, dY: number): boolean {
+  getAdjustedPosition(element: HTMLElement, dX: number, dY: number): Position {
     const collidableElements = this.getCollidableElements();
     const elementRect = element.getBoundingClientRect();
 
     // Check if within world boundary
+    const isOutsideWorldLeft = elementRect.left + dX < 0;
+    const isOutsideWorldRight = elementRect.right + dX > World.getWorldWidth();
+    const isOutsideWorldTop = elementRect.top + dY < 0;
+    const isOutsideWorldBottom =
+      elementRect.bottom + dY > World.getWorldHeight();
+
+    // Correct to inside the world boundary
     if (
-      elementRect.left + dX < 0 ||
-      elementRect.right + dX > World.getWorldWidth() ||
-      elementRect.top + dY < 0 ||
-      elementRect.bottom + dY > World.getWorldHeight()
+      isOutsideWorldLeft ||
+      isOutsideWorldRight ||
+      isOutsideWorldTop ||
+      isOutsideWorldBottom
     ) {
-      return false;
+      // Move back in if outside horizontally
+      const left = isOutsideWorldLeft
+        ? // Ouside of left boundary
+          0
+        : isOutsideWorldRight
+        ? // Outside of right boundary
+          World.getWorldWidth() - elementRect.width
+        : // Not outside - allow movement
+          elementRect.left + dX;
+
+      // Move back in if outside vertically
+      const top = isOutsideWorldTop
+        ? // Ouside of top boundary
+          0
+        : isOutsideWorldBottom
+        ? // Outside of bottom boundary
+          World.getWorldHeight() - elementRect.height - 1
+        : // Not outside - allow movement
+          elementRect.top + dY;
+
+      return { left, top };
     }
 
     // Check if colliding with any collidable element
-    return !collidableElements.some((collidableElement) => {
+    const collidingWith = collidableElements.find((collidableElement) => {
       const collidableElementRect = collidableElement.getBoundingClientRect();
       return !(
         // Not intersecting horizontally
@@ -127,6 +155,31 @@ export class World {
         )
       );
     });
+
+    // Don't allow moving inside the collidable element
+    if (collidingWith) {
+      const collidingWithRect = collidingWith.getBoundingClientRect();
+
+      // Check which part is inside
+      const isOutsideHorizontally =
+        elementRect.left >= collidingWithRect.right ||
+        elementRect.right <= collidingWithRect.left;
+      const isOutsideVertically =
+        elementRect.top >= collidingWithRect.bottom ||
+        elementRect.bottom <= collidingWithRect.top;
+
+      // Return position outside the collidable element
+      return {
+        left: elementRect.left + (isOutsideVertically ? dX : 0),
+        top: elementRect.top + (isOutsideHorizontally ? dY : 0),
+      };
+    }
+
+    // Nothing blocking - allow new position
+    return {
+      left: elementRect.left + dX,
+      top: elementRect.top + dY,
+    };
   }
 
   private getCollidableElements(): HTMLElement[] {

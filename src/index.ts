@@ -20,7 +20,7 @@ barrier.classList.add('collidable');
 barrier.style.position = 'absolute';
 barrier.style.height = '150px';
 barrier.style.width = '150px';
-barrier.style.top = '95px';
+barrier.style.top = '300px';
 barrier.style.left = '600px';
 barrier.style.background = 'white';
 container?.appendChild(barrier);
