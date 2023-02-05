@@ -35,7 +35,6 @@ export class Entity {
     this.width = _width;
 
     this.setState(new Set([State.IDLE]));
-    this.enableDragAndDrop();
   }
 
   /* ------------------------------------------------------ */
@@ -173,32 +172,8 @@ export class Entity {
     this.top = top;
   }
 
-  public enableDragAndDrop(): void {
-    this._element.ondragstart = (): boolean => {
-      return false;
-    };
-    const moveTo = (pageX: number, pageY: number): void => {
-      this.left = pageX - this._element.offsetWidth / 2;
-      this.top = pageY - this._element.offsetHeight / 2;
-    };
-
-    const mouseDownHandler = (event: MouseEvent): void => {
-      this._yAccDisabled = true;
-      moveTo(event.pageX, event.pageY);
-      this._element.addEventListener('mousemove', mouseMoveHandler);
-    };
-
-    const mouseMoveHandler = (event: MouseEvent): void => {
-      moveTo(event.pageX, event.pageY);
-    };
-
-    const mouseUpHandler = (_event: MouseEvent): void => {
-      this._yAccDisabled = false;
-      this._element.removeEventListener('mousemove', mouseMoveHandler);
-    };
-
-    this._element.addEventListener('mousedown', mouseDownHandler);
-    this._element.addEventListener('mouseup', mouseUpHandler);
+  public toggleGravity(on: boolean): void {
+    this._yAccDisabled = !on;
   }
 
   /* ------------------------------------------------------ */

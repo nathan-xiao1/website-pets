@@ -189,6 +189,44 @@ export class World {
     };
   }
 
+  makeEntityDraggable(entity: Entity): void {
+    const moveTo = (pageX: number, pageY: number): void => {
+      entity.left = pageX - entity.element.offsetWidth / 2;
+      entity.top = pageY - entity.element.offsetHeight / 2;
+    };
+
+    // Handle the mouse down event
+    const mouseDownHandler = (event: MouseEvent): void => {
+      event.preventDefault();
+
+      // Disable gravity to prevent entity from dropping
+      entity.toggleGravity(false);
+
+      // Move element's center to mouse
+      moveTo(event.pageX, event.pageY);
+      // Handle mouse move
+      document.addEventListener('mousemove', mouseMoveHandler);
+    };
+
+    // Handle the mouse move event
+    const mouseMoveHandler = (event: MouseEvent): void => {
+      // Update the entity's position on mouse move
+      moveTo(event.pageX, event.pageY);
+    };
+
+    // Handle the mouse up event
+    const mouseUpHandler = (_event: MouseEvent): void => {
+      // Re-enable gravity to let the entity fall
+      entity.toggleGravity(true);
+      // Remove the handler to move entity
+      document.removeEventListener('mousemove', mouseMoveHandler);
+    };
+
+    // Listen to mouse down on the entity element
+    entity.element.addEventListener('mousedown', mouseDownHandler);
+    document.addEventListener('mouseup', mouseUpHandler);
+  }
+
   private getCollidableElements(): HTMLElement[] {
     return Array.from(document.querySelectorAll('.collidable'));
   }

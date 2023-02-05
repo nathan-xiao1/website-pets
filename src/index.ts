@@ -26,5 +26,6 @@ barrier.style.background = 'white';
 container?.appendChild(barrier);
 
 const world = new World(ninja);
+world.makeEntityDraggable(ninja);
 
 world.start();
