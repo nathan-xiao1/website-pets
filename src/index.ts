@@ -4,17 +4,9 @@ import { World } from './models/World';
 import './styles/index.scss';
 
 const container = document.getElementById('main-container');
+if (!container) throw new Error('Failed to find world container');
 
-// div.id = 'moveable';
-// div.style.height = '100px';
-// div.style.width = '120px';
-// div.style.position = 'absolute';
-// div.src = sprite_idle;
-// container?.appendChild(div);
-
-const ninja = Ninja();
-container?.appendChild(ninja.element);
-
+// Barrier
 const barrier = document.createElement('div');
 barrier.classList.add('collidable');
 barrier.style.position = 'absolute';
@@ -25,7 +17,10 @@ barrier.style.left = '600px';
 barrier.style.background = 'white';
 container?.appendChild(barrier);
 
-const world = new World(ninja);
-world.makeEntityDraggable(ninja);
+// Main controllable entity
+const ninja = Ninja();
 
+// The world model
+const world = new World(ninja, container);
+world.makeEntityDraggable(ninja);
 world.start();

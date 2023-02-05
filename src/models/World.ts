@@ -27,7 +27,17 @@ export class World {
   private isRunning = false;
   private keyPressed: Set<Key>;
 
-  constructor(private _mainEntity: Entity) {
+  constructor(
+    private _mainEntity: Entity,
+    private _worldContainer: HTMLElement
+  ) {
+    if (!_worldContainer) {
+      throw new Error('Failed to find world container');
+    }
+
+    // Add the main entity to the world container
+    _worldContainer.appendChild(_mainEntity.element);
+
     this.keyPressed = new Set();
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleKeyUp = this.handleKeyUp.bind(this);
