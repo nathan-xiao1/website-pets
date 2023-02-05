@@ -9,7 +9,7 @@ const devServerConfig: DevServerConfiguration = {
 
 const config: Configuration = {
   mode: 'development',
-  entry: './src/index.ts',
+  entry: './src/demo.ts',
   devtool: 'inline-source-map',
   devServer: devServerConfig,
   module: {
@@ -51,6 +51,7 @@ const config: Configuration = {
   output: {
     filename: '[name].js',
     path: path.resolve(__dirname, 'dist'),
+    library: 'websitePets',
     clean: true,
   },
   optimization: {

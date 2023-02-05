@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
+    "declaration": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "module": "commonjs",
@@ -11,5 +12,6 @@
     "sourceMap": true,
     "strict": true,
     "target": "ES6"
-  }
+  },
+  "include": ["./src"]
 }

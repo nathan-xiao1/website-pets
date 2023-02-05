@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "private": true,
+  "main": "dist/index.js",
   "scripts": {
-    "build": "webpack --config webpack.config.ts",
+    "build": "tsc --project ./tsconfig.json",
+    "build:webpack": "webpack --config webpack.config.ts",
     "start": "webpack serve --open",
     "watch": "webpack --watch",
+    "postinstall": "npm run build",
     "prettier": "prettier --write src/",
     "eslint": "eslint .",
     "test": "echo \"Error: no test specified\" && exit 1"
