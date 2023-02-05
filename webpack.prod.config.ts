@@ -1,17 +1,11 @@
 import * as path from 'path';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import type { Configuration } from 'webpack';
-import type { Configuration as DevServerConfiguration } from 'webpack-dev-server';
-
-const devServerConfig: DevServerConfiguration = {
-  static: ['./src/assets'],
-};
 
 const config: Configuration = {
-  mode: 'development',
-  entry: './src/demo.ts',
+  mode: 'production',
+  entry: './src/index.ts',
   devtool: 'inline-source-map',
-  devServer: devServerConfig,
   module: {
     rules: [
       {
@@ -46,12 +40,17 @@ const config: Configuration = {
     }),
   ],
   resolve: {
+    alias: {
+      '@assets': path.resolve(__dirname, 'src/assets/'),
+    },
     extensions: ['.tsx', '.ts', '.js'],
     fallback: { path: require.resolve('path-browserify') },
   },
   output: {
     filename: '[name].js',
     path: path.resolve(__dirname, 'dist'),
+    library: 'websitePets',
+    libraryTarget: 'umd',
     clean: true,
   },
 };

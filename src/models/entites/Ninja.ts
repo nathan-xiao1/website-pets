@@ -1,5 +1,5 @@
 import { Entity } from '../Entity';
 
 export function Ninja(): Entity {
-  return new Entity('sprites/ninja/', 0, 150);
+  return new Entity('ninja', 0, 150);
 }
