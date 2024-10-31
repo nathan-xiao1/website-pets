@@ -1,16 +1,13 @@
-import { State, StateSprite } from './State';
-import { spriteMap } from '../utils/sprites';
+import { SpriteState, State, StateToSpriteMap } from './State';
 import { Key } from './World';
 import type { WorldInfo } from './World';
 
-export class Entity {
+export abstract class Entity {
   private _yAcc = 0;
   private _yAccDisabled = false;
 
   private _element: HTMLImageElement;
   private _state: State = State.IDLE;
-
-  private _spriteMap: Map<string, string>;
 
   private keyAction: Record<Key, State> = {
     [Key.UP]: State.MOVE_UP,
@@ -19,20 +16,15 @@ export class Entity {
     [Key.RIGHT]: State.MOVE_RIGHT,
   };
 
+  abstract spriteMap: Record<SpriteState, string>;
+
   constructor(
-    private _spriteName: string,
     private _left: number = 0,
     private _top: number = 0,
     private _height: number = 100,
     private _width: number = 100,
     private _speed: number = 6
   ) {
-    const _spriteMap = spriteMap.get(_spriteName);
-    if (!_spriteMap) {
-      throw new Error(`Failed to find sprite for ${_spriteName}`);
-    }
-    this._spriteMap = _spriteMap;
-
     const element = document.createElement('img');
     element.style.position = 'absolute';
     element.style.zIndex = '1000';
@@ -111,23 +103,9 @@ export class Entity {
       State.MOVE_RIGHT,
     ];
 
-    // Set the state with the highest priority state if
-    // one exists
-    const idle = !statePriority.some((state) => {
-      if (states.has(state)) {
-        // Only set the state if it is different to
-        // the existing state
-        if (this._state !== state) {
-          this._state = state;
-          this._setStateSprite(this._state);
-        }
-        return true;
-      }
-      return false;
-    });
-
-    // No state passed in, so default to idle state
-    if (idle) {
+    // Check if the entity is idle (i.e. no key pressed)
+    const isIdle = states.size == 0;
+    if (isIdle) {
       let newState = State.IDLE;
 
       // Use falling state if falling
@@ -141,6 +119,20 @@ export class Entity {
         this._state = newState;
         this._setStateSprite(newState);
       }
+    } else {
+      // Set the current state to be the state with the highest priority
+      statePriority.some((state) => {
+        if (states.has(state)) {
+          // Only set the state if it is different to
+          // the existing state
+          if (this._state !== state) {
+            this._state = state;
+            this._setStateSprite(this._state);
+          }
+          return true;
+        }
+        return false;
+      });
     }
   }
 
@@ -190,7 +182,7 @@ export class Entity {
   /* ------------------------------------------------------ */
 
   private _setStateSprite(state: State): void {
-    const stateSprite = StateSprite[state];
+    const stateSprite = StateToSpriteMap[state];
 
     // Set the sprite direction since we use the same sprite
     if (state === State.MOVE_LEFT) {
@@ -199,7 +191,7 @@ export class Entity {
       this._setDirection('right');
     }
 
-    this._element.src = this._spriteMap.get(stateSprite) ?? '';
+    this._element.src = this.spriteMap[stateSprite] ?? '';
   }
 
   private _setDirection(direction: 'left' | 'right'): void {

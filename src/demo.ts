@@ -18,7 +18,7 @@ barrier.style.background = 'white';
 container?.appendChild(barrier);
 
 // Main controllable entity
-const ninja = Ninja();
+const ninja = new Ninja();
 
 // The world model
 const world = new World(ninja, container);

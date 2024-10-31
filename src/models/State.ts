@@ -1,3 +1,6 @@
+/**
+ * States of an Entity
+ */
 export const enum State {
   IDLE = 'idle',
   FALL = 'fall',
@@ -7,11 +10,26 @@ export const enum State {
   MOVE_DOWN = 'move-down',
 }
 
-export const StateSprite: Record<State, string> = {
-  [State.IDLE]: 'idle',
-  [State.FALL]: 'fall',
-  [State.MOVE_LEFT]: 'run',
-  [State.MOVE_RIGHT]: 'run',
-  [State.MOVE_UP]: 'climb',
-  [State.MOVE_DOWN]: 'climb',
+/**
+ * States of a sprite
+ */
+export const enum SpriteState {
+  CLIMB = 'climb',
+  FALL = 'fall',
+  IDLE = 'idle',
+  RUN = 'run',
+  SIT = 'sit',
+  WALLGRAB = 'wallgrab',
+}
+
+/**
+ * Maps an Entity's state to a sprite
+ */
+export const StateToSpriteMap: Record<State, SpriteState> = {
+  [State.IDLE]: SpriteState.IDLE,
+  [State.FALL]: SpriteState.FALL,
+  [State.MOVE_LEFT]: SpriteState.RUN,
+  [State.MOVE_RIGHT]: SpriteState.RUN,
+  [State.MOVE_UP]: SpriteState.CLIMB,
+  [State.MOVE_DOWN]: SpriteState.CLIMB,
 };
