@@ -50,6 +50,7 @@ export abstract class Entity {
     this.setLeft(config.left);
 
     this.setState(new Set([State.IDLE]));
+    this.setStateSprite(State.IDLE);
   }
 
   /* ------------------------------------------------------ */
@@ -99,49 +100,53 @@ export abstract class Entity {
   /*                    Private functions                   */
   /* ------------------------------------------------------ */
 
+  /**
+   * Sets the state of the current Entity.
+   */
   private setState(states: Set<State>): void {
     // Set state with priority
     const statePriority: State[] = [
       State.MOVE_UP,
+      State.FALL,
       State.MOVE_LEFT,
       State.MOVE_RIGHT,
+      State.IDLE,
     ];
 
-    // Check if the entity is idle (i.e. no key pressed)
-    const isIdle = states.size == 0;
-    if (isIdle) {
-      let newState = State.IDLE;
+    let newState = State.IDLE;
 
-      // Use falling state if falling
-      if (this.yAcc !== 0) {
-        newState = State.FALL;
-      }
-
-      // Only set the state if it is different to
-      // the existing state
-      if (this.state !== newState) {
-        this.state = newState;
-        this.setStateSprite(newState);
-      }
-    } else {
-      // Set the current state to be the state with the highest priority
+    // Use falling state if falling
+    if (this.yAcc !== 0 && !states.has(State.MOVE_UP)) {
+      newState = State.FALL;
+    }
+    // Idle if not falling and no key press
+    else if (states.size == 0) {
+      newState = State.IDLE;
+    }
+    // Set the current state to be the state with the highest priority
+    else {
       statePriority.some((state) => {
         if (states.has(state)) {
-          // Only set the state if it is different to
-          // the existing state
-          if (this.state !== state) {
-            this.state = state;
-            this.setStateSprite(this.state);
-          }
+          newState = state;
           return true;
         }
         return false;
       });
     }
+
+    // Only set the state if it is different to
+    // the existing state
+    if (this.state !== newState) {
+      this.state = newState;
+      this.setStateSprite(newState);
+    }
   }
 
+  /**
+   * Moves the Entity to a position based on the action state.
+   */
   private move(states: Set<State>, worldInfo: WorldInfo): void {
-    this.yAcc = !this.yAccDisabled ? Math.max(this.yAcc - 0.5, -10) : 0;
+    this.yAcc = !this.yAccDisabled ? Math.max(this.yAcc - 0.2, -10) : 0;
 
     let dX = 0;
     let dY = -this.yAcc;
@@ -157,6 +162,8 @@ export abstract class Entity {
           break;
         case State.MOVE_UP:
           dY = -this.speed;
+          // Reset downward acceleration
+          this.yAcc = 0;
           break;
         case State.IDLE:
         default:
