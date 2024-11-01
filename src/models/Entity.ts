@@ -2,38 +2,52 @@ import { SpriteState, State, StateToSpriteMap } from './State';
 import { Key } from './World';
 import type { WorldInfo } from './World';
 
+const KEY_ACTION_MAP: Record<Key, State> = {
+  [Key.UP]: State.MOVE_UP,
+  [Key.DOWN]: State.IDLE,
+  [Key.LEFT]: State.MOVE_LEFT,
+  [Key.RIGHT]: State.MOVE_RIGHT,
+};
+
 export abstract class Entity {
-  private _yAcc = 0;
-  private _yAccDisabled = false;
+  private yAcc = 0;
+  private yAccDisabled = false;
 
-  private _element: HTMLImageElement;
-  private _state: State = State.IDLE;
+  private element: HTMLImageElement;
+  private state: State = State.IDLE;
 
-  private keyAction: Record<Key, State> = {
-    [Key.UP]: State.MOVE_UP,
-    [Key.DOWN]: State.IDLE,
-    [Key.LEFT]: State.MOVE_LEFT,
-    [Key.RIGHT]: State.MOVE_RIGHT,
-  };
-
-  abstract spriteMap: Record<SpriteState, string>;
+  private left = 0;
+  private top = 0;
+  private speed = 6;
 
   constructor(
-    private _left: number = 0,
-    private _top: number = 0,
-    private _height: number = 100,
-    private _width: number = 100,
-    private _speed: number = 6
+    private spriteMap: Record<SpriteState, string>,
+    config: {
+      left: number;
+      top: number;
+      height: number;
+      width: number;
+      speed: number;
+    } = {
+      left: 0,
+      top: 0,
+      height: 100,
+      width: 100,
+      speed: 6,
+    }
   ) {
     const element = document.createElement('img');
     element.style.position = 'absolute';
     element.style.zIndex = '1000';
 
-    this._element = element;
-    this.top = _top;
-    this.left = _left;
-    this.height = _height;
-    this.width = _width;
+    this.element = element;
+    this.element.height = config.height;
+    this.element.width = config.width;
+
+    this.speed = config.speed;
+
+    this.setTop(config.top);
+    this.setLeft(config.left);
 
     this.setState(new Set([State.IDLE]));
   }
@@ -43,44 +57,26 @@ export abstract class Entity {
   /* ------------------------------------------------------ */
 
   // Prevent external modification of style
-  public get element(): Readonly<HTMLImageElement> {
-    return this._element;
+  public getElement(): Readonly<HTMLImageElement> {
+    return this.element;
   }
 
-  public get left(): number {
-    return this._left;
+  public getLeft(): number {
+    return this.left;
   }
 
-  public set left(left: number) {
-    this._left = left;
-    this._element.style.left = `${left}px`;
+  public setLeft(left: number) {
+    this.left = left;
+    this.element.style.left = `${left}px`;
   }
 
-  public get top(): number {
-    return this._top;
+  public getTop(): number {
+    return this.top;
   }
 
-  public set top(top: number) {
-    this._top = top;
-    this._element.style.top = `${top}px`;
-  }
-
-  public get height(): number {
-    return this._height;
-  }
-
-  public set height(height: number) {
-    this._height = height;
-    this._element.height = height;
-  }
-
-  public get width(): number {
-    return this._width;
-  }
-
-  public set width(width: number) {
-    this._width = width;
-    this._element.width = width;
+  public setTop(top: number) {
+    this.top = top;
+    this.element.style.top = `${top}px`;
   }
 
   /* ------------------------------------------------------ */
@@ -89,13 +85,21 @@ export abstract class Entity {
 
   public tick(worldInfo: WorldInfo): void {
     const keyStates = new Set(
-      [...worldInfo.keyPressed].map((key) => this.keyAction[key])
+      [...worldInfo.keyPressed].map((key) => KEY_ACTION_MAP[key])
     );
     this.setState(keyStates);
     this.move(keyStates, worldInfo);
   }
 
-  public setState(states: Set<State>): void {
+  public toggleGravity(on: boolean): void {
+    this.yAccDisabled = !on;
+  }
+
+  /* ------------------------------------------------------ */
+  /*                    Private functions                   */
+  /* ------------------------------------------------------ */
+
+  private setState(states: Set<State>): void {
     // Set state with priority
     const statePriority: State[] = [
       State.MOVE_UP,
@@ -109,15 +113,15 @@ export abstract class Entity {
       let newState = State.IDLE;
 
       // Use falling state if falling
-      if (this._yAcc !== 0) {
+      if (this.yAcc !== 0) {
         newState = State.FALL;
       }
 
       // Only set the state if it is different to
       // the existing state
-      if (this._state !== newState) {
-        this._state = newState;
-        this._setStateSprite(newState);
+      if (this.state !== newState) {
+        this.state = newState;
+        this.setStateSprite(newState);
       }
     } else {
       // Set the current state to be the state with the highest priority
@@ -125,9 +129,9 @@ export abstract class Entity {
         if (states.has(state)) {
           // Only set the state if it is different to
           // the existing state
-          if (this._state !== state) {
-            this._state = state;
-            this._setStateSprite(this._state);
+          if (this.state !== state) {
+            this.state = state;
+            this.setStateSprite(this.state);
           }
           return true;
         }
@@ -136,23 +140,23 @@ export abstract class Entity {
     }
   }
 
-  public move(states: Set<State>, worldInfo: WorldInfo): void {
-    this._yAcc = !this._yAccDisabled ? Math.max(this._yAcc - 0.5, -10) : 0;
+  private move(states: Set<State>, worldInfo: WorldInfo): void {
+    this.yAcc = !this.yAccDisabled ? Math.max(this.yAcc - 0.5, -10) : 0;
 
     let dX = 0;
-    let dY = -this._yAcc;
+    let dY = -this.yAcc;
 
     // Calculate the new position delta
     states.forEach((state) => {
       switch (state) {
         case State.MOVE_LEFT:
-          dX = -this._speed;
+          dX = -this.speed;
           break;
         case State.MOVE_RIGHT:
-          dX = this._speed;
+          dX = this.speed;
           break;
         case State.MOVE_UP:
-          dY = -this._speed;
+          dY = -this.speed;
           break;
         case State.IDLE:
         default:
@@ -161,41 +165,33 @@ export abstract class Entity {
     });
 
     // Move if the new positioFn is valid
-    const { left, top } = worldInfo.getAdjustedPosition(this._element, dX, dY);
+    const { left, top } = worldInfo.getAdjustedPosition(this.element, dX, dY);
 
     // Didn't move vertically, so can reset y-acceleration
     if (this.top === top) {
-      this._yAcc = 0;
+      this.yAcc = 0;
     }
 
     // Set the new position
-    this.left = left;
-    this.top = top;
+    this.setLeft(left);
+    this.setTop(top);
   }
 
-  public toggleGravity(on: boolean): void {
-    this._yAccDisabled = !on;
-  }
-
-  /* ------------------------------------------------------ */
-  /*                    Private functions                   */
-  /* ------------------------------------------------------ */
-
-  private _setStateSprite(state: State): void {
+  private setStateSprite(state: State): void {
     const stateSprite = StateToSpriteMap[state];
 
     // Set the sprite direction since we use the same sprite
     if (state === State.MOVE_LEFT) {
-      this._setDirection('left');
+      this.setDirection('left');
     } else if (state === State.MOVE_RIGHT) {
-      this._setDirection('right');
+      this.setDirection('right');
     }
 
-    this._element.src = this.spriteMap[stateSprite] ?? '';
+    this.element.src = this.spriteMap[stateSprite] ?? '';
   }
 
-  private _setDirection(direction: 'left' | 'right'): void {
-    this._element.style.transform =
+  private setDirection(direction: 'left' | 'right'): void {
+    this.element.style.transform =
       direction === 'left' ? 'scaleX(-1)' : 'scaleX(1)';
   }
 }

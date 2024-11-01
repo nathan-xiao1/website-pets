@@ -36,7 +36,7 @@ export class World {
     }
 
     // Add the main entity to the world container
-    _worldContainer.appendChild(_mainEntity.element);
+    _worldContainer.appendChild(_mainEntity.getElement());
 
     this.keyPressed = new Set();
     this.handleKeyDown = this.handleKeyDown.bind(this);
@@ -201,8 +201,8 @@ export class World {
 
   makeEntityDraggable(entity: Entity): void {
     const moveTo = (pageX: number, pageY: number): void => {
-      entity.left = pageX - entity.element.offsetWidth / 2;
-      entity.top = pageY - entity.element.offsetHeight / 2;
+      entity.setLeft(pageX - entity.getElement().offsetWidth / 2);
+      entity.setTop(pageY - entity.getElement().offsetHeight / 2);
     };
 
     // Handle the mouse down event
@@ -233,7 +233,7 @@ export class World {
     };
 
     // Listen to mouse down on the entity element
-    entity.element.addEventListener('mousedown', mouseDownHandler);
+    entity.getElement().addEventListener('mousedown', mouseDownHandler);
     document.addEventListener('mouseup', mouseUpHandler);
   }
 
