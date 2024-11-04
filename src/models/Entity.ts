@@ -9,7 +9,23 @@ const KEY_ACTION_MAP: Record<Key, State> = {
   [Key.RIGHT]: State.MOVE_RIGHT,
 };
 
+export interface EntityConfig {
+  left: number;
+  top: number;
+  height: number;
+  width: number;
+  speed: number;
+}
+
 export abstract class Entity {
+  private static DEFAULT_CONFIG: EntityConfig = {
+    left: 0,
+    top: 0,
+    height: 100,
+    width: 100,
+    speed: 5,
+  };
+
   private yAcc = 0;
   private yAccDisabled = false;
 
@@ -18,27 +34,20 @@ export abstract class Entity {
 
   private left = 0;
   private top = 0;
-  private speed = 6;
+  private speed = 0;
 
   constructor(
     private spriteMap: Record<SpriteState, string>,
-    config: {
-      left: number;
-      top: number;
-      height: number;
-      width: number;
-      speed: number;
-    } = {
-      left: 0,
-      top: 0,
-      height: 100,
-      width: 100,
-      speed: 6,
-    }
+    entityConfig?: Partial<EntityConfig>
   ) {
     const element = document.createElement('img');
     element.style.position = 'absolute';
     element.style.zIndex = '1000';
+
+    const config: EntityConfig = {
+      ...Entity.DEFAULT_CONFIG,
+      ...entityConfig,
+    };
 
     this.element = element;
     this.element.height = config.height;

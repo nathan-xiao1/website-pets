@@ -1,4 +1,4 @@
-import { Entity } from '../Entity';
+import { Entity, EntityConfig } from '../Entity';
 import { SpriteState } from '../State';
 
 import climbSprite from '../../assets/sprites/ninja/climb.gif';
@@ -9,14 +9,17 @@ import sitSprite from '../../assets/sprites/ninja/sit.gif';
 import wallGrabSprite from '../../assets/sprites/ninja/wallgrab.gif';
 
 export class Ninja extends Entity {
-  constructor() {
-    super({
-      [SpriteState.CLIMB]: climbSprite,
-      [SpriteState.FALL]: fallSprite,
-      [SpriteState.IDLE]: idleSprite,
-      [SpriteState.RUN]: runSprite,
-      [SpriteState.SIT]: sitSprite,
-      [SpriteState.WALLGRAB]: wallGrabSprite,
-    });
+  constructor(entityConfig?: Partial<EntityConfig>) {
+    super(
+      {
+        [SpriteState.CLIMB]: climbSprite,
+        [SpriteState.FALL]: fallSprite,
+        [SpriteState.IDLE]: idleSprite,
+        [SpriteState.RUN]: runSprite,
+        [SpriteState.SIT]: sitSprite,
+        [SpriteState.WALLGRAB]: wallGrabSprite,
+      },
+      entityConfig
+    );
   }
 }
