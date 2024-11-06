@@ -27,24 +27,35 @@ export class World {
   private isRunning = false;
   private keyPressed: Set<Key>;
 
-  constructor(
-    private _mainEntity: Entity,
-    private _worldContainer: HTMLElement
-  ) {
-    if (!_worldContainer) {
+  constructor(private mainEntity: Entity, private worldContainer: HTMLElement) {
+    if (!worldContainer) {
       throw new Error('Failed to find world container');
     }
-
-    // Add the main entity to the world container
-    _worldContainer.appendChild(_mainEntity.getElement());
 
     this.keyPressed = new Set();
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleKeyUp = this.handleKeyUp.bind(this);
+
+    window.addEventListener('resize', this.onScreenSizeChange.bind(this));
   }
 
   start(): ReturnType<typeof requestAnimationFrame> {
+    if (this.isRunning) {
+      console.warn('World is already running.');
+      return -1;
+    }
+
+    if (World.isSmallScreenSize()) {
+      console.warn('World cannot be run on a small screen');
+      return -1;
+    }
+
     this.isRunning = true;
+
+    // Add the main entity to the world container
+    this.worldContainer.appendChild(this.mainEntity.getElement());
+
+    // Key input listeners
     document.addEventListener('keydown', this.handleKeyDown);
     document.addEventListener('keyup', this.handleKeyUp);
 
@@ -52,12 +63,65 @@ export class World {
   }
 
   stop(): void {
+    if (!this.isRunning) return;
+
     this.isRunning = false;
+
+    // Remove the main entity from the world container
+    this.worldContainer.removeChild(this.mainEntity.getElement());
+
     document.removeEventListener('keydown', this.handleKeyDown);
     document.removeEventListener('keyup', this.handleKeyUp);
   }
 
-  tick(): number {
+  makeEntityDraggable(entity: Entity): void {
+    const moveTo = (pageX: number, pageY: number): void => {
+      entity.setLeft(pageX - entity.getElement().offsetWidth / 2);
+      entity.setTop(pageY - entity.getElement().offsetHeight / 2);
+    };
+
+    // Handle the mouse down event
+    const mouseDownHandler = (event: MouseEvent): void => {
+      event.preventDefault();
+
+      // Disable gravity to prevent entity from dropping
+      entity.toggleGravity(false);
+
+      // Move element's center to mouse
+      moveTo(event.pageX, event.pageY);
+      // Handle mouse move
+      document.addEventListener('mousemove', mouseMoveHandler);
+    };
+
+    // Handle the mouse move event
+    const mouseMoveHandler = (event: MouseEvent): void => {
+      // Update the entity's position on mouse move
+      moveTo(event.pageX, event.pageY);
+    };
+
+    // Handle the mouse up event
+    const mouseUpHandler = (_event: MouseEvent): void => {
+      // Re-enable gravity to let the entity fall
+      entity.toggleGravity(true);
+      // Remove the handler to move entity
+      document.removeEventListener('mousemove', mouseMoveHandler);
+    };
+
+    // Listen to mouse down on the entity element
+    entity.getElement().addEventListener('mousedown', mouseDownHandler);
+    document.addEventListener('mouseup', mouseUpHandler);
+  }
+
+  private onScreenSizeChange() {
+    // Disable on small screens
+    if (World.isSmallScreenSize()) {
+      this.stop();
+    } else {
+      this.start();
+    }
+  }
+
+  private tick(): number {
     if (!this.isRunning) return -1;
 
     const worldInfo: WorldInfo = {
@@ -67,12 +131,12 @@ export class World {
       getAdjustedPosition: this.getAdjustedPosition.bind(this),
     };
 
-    this._mainEntity.tick(worldInfo);
+    this.mainEntity.tick(worldInfo);
 
     return window.requestAnimationFrame(this.tick.bind(this));
   }
 
-  handleKeyDown(ev: KeyboardEvent): void {
+  private handleKeyDown(ev: KeyboardEvent): void {
     switch (ev.key) {
       case 'Left':
       case 'ArrowLeft':
@@ -91,7 +155,7 @@ export class World {
     }
   }
 
-  handleKeyUp(ev: KeyboardEvent): void {
+  private handleKeyUp(ev: KeyboardEvent): void {
     switch (ev.key) {
       case 'Left':
       case 'ArrowLeft':
@@ -110,7 +174,11 @@ export class World {
     }
   }
 
-  getAdjustedPosition(element: HTMLElement, dX: number, dY: number): Position {
+  private getAdjustedPosition(
+    element: HTMLElement,
+    dX: number,
+    dY: number
+  ): Position {
     const collidableElements = this.getCollidableElements();
     const elementRect = element.getBoundingClientRect();
 
@@ -199,53 +267,19 @@ export class World {
     };
   }
 
-  makeEntityDraggable(entity: Entity): void {
-    const moveTo = (pageX: number, pageY: number): void => {
-      entity.setLeft(pageX - entity.getElement().offsetWidth / 2);
-      entity.setTop(pageY - entity.getElement().offsetHeight / 2);
-    };
-
-    // Handle the mouse down event
-    const mouseDownHandler = (event: MouseEvent): void => {
-      event.preventDefault();
-
-      // Disable gravity to prevent entity from dropping
-      entity.toggleGravity(false);
-
-      // Move element's center to mouse
-      moveTo(event.pageX, event.pageY);
-      // Handle mouse move
-      document.addEventListener('mousemove', mouseMoveHandler);
-    };
-
-    // Handle the mouse move event
-    const mouseMoveHandler = (event: MouseEvent): void => {
-      // Update the entity's position on mouse move
-      moveTo(event.pageX, event.pageY);
-    };
-
-    // Handle the mouse up event
-    const mouseUpHandler = (_event: MouseEvent): void => {
-      // Re-enable gravity to let the entity fall
-      entity.toggleGravity(true);
-      // Remove the handler to move entity
-      document.removeEventListener('mousemove', mouseMoveHandler);
-    };
-
-    // Listen to mouse down on the entity element
-    entity.getElement().addEventListener('mousedown', mouseDownHandler);
-    document.addEventListener('mouseup', mouseUpHandler);
-  }
-
   private getCollidableElements(): HTMLElement[] {
     return Array.from(document.querySelectorAll('.collidable'));
   }
 
-  static getWorldWidth(): number {
+  private static getWorldWidth(): number {
     return document.documentElement.clientWidth;
   }
 
-  static getWorldHeight(): number {
+  private static getWorldHeight(): number {
     return document.documentElement.clientHeight;
+  }
+
+  private static isSmallScreenSize(): boolean {
+    return Math.min(World.getWorldHeight(), World.getWorldWidth()) < 768;
   }
 }
