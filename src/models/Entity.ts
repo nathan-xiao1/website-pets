@@ -181,7 +181,7 @@ export abstract class Entity {
     });
 
     // Move if the new positioFn is valid
-    const { left, top } = worldInfo.getAdjustedPosition(this.element, dX, dY);
+    const { left, top } = worldInfo.calculatePosition(this.element, dX, dY);
 
     // Didn't move vertically, so can reset y-acceleration
     if (this.top === top) {

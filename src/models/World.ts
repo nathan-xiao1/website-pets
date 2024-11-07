@@ -11,11 +11,7 @@ export interface WorldInfo {
   keyPressed: Set<Key>;
   worldHeight: number;
   worldWidth: number;
-  getAdjustedPosition: (
-    element: HTMLElement,
-    dX: number,
-    dY: number
-  ) => Position;
+  calculatePosition: (element: HTMLElement, dX: number, dY: number) => Position;
 }
 
 export interface Position {
@@ -128,7 +124,7 @@ export class World {
       keyPressed: this.keyPressed,
       worldHeight: World.getWorldHeight(),
       worldWidth: World.getWorldWidth(),
-      getAdjustedPosition: this.getAdjustedPosition.bind(this),
+      calculatePosition: this.calculatePosition.bind(this),
     };
 
     this.mainEntity.tick(worldInfo);
@@ -174,7 +170,7 @@ export class World {
     }
   }
 
-  private getAdjustedPosition(
+  private calculatePosition(
     element: HTMLElement,
     dX: number,
     dY: number
@@ -182,43 +178,27 @@ export class World {
     const collidableElements = this.getCollidableElements();
     const elementRect = element.getBoundingClientRect();
 
-    // Check if within world boundary
-    const isOutsideWorldLeft = elementRect.left + dX < 0;
-    const isOutsideWorldRight = elementRect.right + dX > World.getWorldWidth();
-    const isOutsideWorldTop = elementRect.top + dY < 0;
-    const isOutsideWorldBottom =
-      elementRect.bottom + dY > World.getWorldHeight();
+    let newPosition = this.calculatePositionWithCollision(
+      elementRect,
+      dX,
+      dY,
+      collidableElements
+    );
 
-    // Correct to inside the world boundary
-    if (
-      isOutsideWorldLeft ||
-      isOutsideWorldRight ||
-      isOutsideWorldTop ||
-      isOutsideWorldBottom
-    ) {
-      // Move back in if outside horizontally
-      const left = isOutsideWorldLeft
-        ? // Ouside of left boundary
-          0
-        : isOutsideWorldRight
-        ? // Outside of right boundary
-          World.getWorldWidth() - elementRect.width
-        : // Not outside - allow movement
-          elementRect.left + dX;
+    newPosition = this.calculatePositionWithWorldBoundary(
+      elementRect,
+      newPosition
+    );
 
-      // Move back in if outside vertically
-      const top = isOutsideWorldTop
-        ? // Ouside of top boundary
-          0
-        : isOutsideWorldBottom
-        ? // Outside of bottom boundary
-          World.getWorldHeight() - elementRect.height
-        : // Not outside - allow movement
-          elementRect.top + dY;
+    return newPosition;
+  }
 
-      return { left, top };
-    }
-
+  private calculatePositionWithCollision(
+    elementRect: DOMRect,
+    dX: number,
+    dY: number,
+    collidableElements: HTMLElement[]
+  ): Position {
     // Check if colliding with any collidable element
     const collidingElements = collidableElements.filter((collidableElement) => {
       const collidableElementRect = collidableElement.getBoundingClientRect();
@@ -286,12 +266,57 @@ export class World {
         top: elementRect.top + (willCollideVertically ? 0 : dY),
       };
     }
-
     // Nothing blocking - allow new position
     return {
       left: elementRect.left + dX,
       top: elementRect.top + dY,
     };
+  }
+
+  private calculatePositionWithWorldBoundary(
+    elementRect: DOMRect,
+    position: Position
+  ): Position {
+    // Check if within world boundary
+    const isOutsideWorldLeft = position.left < 0;
+    const isOutsideWorldRight =
+      position.left + elementRect.width > World.getWorldWidth();
+    const isOutsideWorldTop = position.top < 0;
+    const isOutsideWorldBottom =
+      position.top + elementRect.height > World.getWorldHeight();
+
+    // Correct to inside the world boundary
+    if (
+      isOutsideWorldLeft ||
+      isOutsideWorldRight ||
+      isOutsideWorldTop ||
+      isOutsideWorldBottom
+    ) {
+      // Move back in if outside horizontally
+      const left = isOutsideWorldLeft
+        ? // Ouside of left boundary
+          0
+        : isOutsideWorldRight
+        ? // Outside of right boundary
+          World.getWorldWidth() - elementRect.width
+        : // Not outside - allow movement
+          position.left;
+
+      // Move back in if outside vertically
+      const top = isOutsideWorldTop
+        ? // Ouside of top boundary
+          0
+        : isOutsideWorldBottom
+        ? // Outside of bottom boundary
+          World.getWorldHeight() - elementRect.height
+        : // Not outside - allow movement
+          position.top;
+
+      return { left, top };
+    }
+
+    // Not outside world boundary
+    return position;
   }
 
   private getCollidableElements(): HTMLElement[] {
