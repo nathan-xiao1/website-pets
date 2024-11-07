@@ -220,43 +220,70 @@ export class World {
     }
 
     // Check if colliding with any collidable element
-    const collidingWith = collidableElements.find((collidableElement) => {
+    const collidingElements = collidableElements.filter((collidableElement) => {
       const collidableElementRect = collidableElement.getBoundingClientRect();
+      const newLeft = elementRect.left + dX;
+      const newRight = elementRect.right + dX;
+      const newTop = elementRect.top + dY;
+      const newBottom = elementRect.bottom + dY;
+
       return !(
-        // Not intersecting horizontally
-        (
-          elementRect.left + dX >= collidableElementRect.right ||
-          elementRect.right + dX <= collidableElementRect.left ||
-          // Not intersecting vertically
-          elementRect.top + dY >= collidableElementRect.bottom ||
-          elementRect.bottom + dY <= collidableElementRect.top
-        )
+        newLeft > collidableElementRect.right ||
+        newRight < collidableElementRect.left ||
+        newTop > collidableElementRect.bottom ||
+        newBottom < collidableElementRect.top
       );
     });
 
-    // Don't allow moving inside the collidable element
-    if (collidingWith) {
-      const collidingWithRect = collidingWith.getBoundingClientRect();
+    if (collidingElements.length > 0) {
+      // Check whether we will collide with any collidable element on the horizontal axis
+      const willCollideHorizontally = collidingElements.some(
+        (collidingElement) => {
+          const collidingElementRect = collidingElement.getBoundingClientRect();
+          const newLeft = elementRect.left + dX;
+          const newRight = elementRect.right + dX;
 
-      // Check which part is inside
-      const isOutsideHorizontally =
-        elementRect.left >= collidingWithRect.right ||
-        elementRect.right <= collidingWithRect.left;
-      const isOutsideVertically =
-        elementRect.top >= collidingWithRect.bottom ||
-        elementRect.bottom <= collidingWithRect.top;
+          // Ignore any element we don't collide with vertically
+          const isOutsideVertically =
+            elementRect.top >= collidingElementRect.bottom ||
+            elementRect.bottom <= collidingElementRect.top;
 
-      if (!isOutsideHorizontally && !isOutsideVertically) {
-        return {
-          left: elementRect.left,
-          top: collidingWithRect.top - elementRect.height,
-        };
-      }
+          if (isOutsideVertically) return false;
+
+          // Whether the new horizontal position will be outside of the collidable element
+          return !(
+            newLeft >= collidingElementRect.right ||
+            newRight <= collidingElementRect.left
+          );
+        }
+      );
+
+      // Check whether we will collide with any collidable element on the vertical axis
+      const willCollideVertically = collidingElements.some(
+        (collidingElement) => {
+          const collidingElementRect = collidingElement.getBoundingClientRect();
+          const newTop = elementRect.top + dY;
+          const newBottom = elementRect.bottom + dY;
+
+          // Ignore any element we don't collide with horizontally
+          const isOutsideHorizontally =
+            elementRect.left >= collidingElementRect.right ||
+            elementRect.right <= collidingElementRect.left;
+
+          if (isOutsideHorizontally) return false;
+
+          // Whether the new horizontal position will be outside of the collidable element
+          return !(
+            newTop >= collidingElementRect.bottom ||
+            newBottom <= collidingElementRect.top
+          );
+        }
+      );
 
       // Return position outside the collidable element
       return {
-        left: elementRect.left + (isOutsideVertically ? dX : 0),
-        top: elementRect.top + (isOutsideHorizontally ? dY : 0),
+        left: elementRect.left + (willCollideHorizontally ? 0 : dX),
+        top: elementRect.top + (willCollideVertically ? 0 : dY),
       };
     }
 
