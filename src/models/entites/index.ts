@@ -1,1 +1,1 @@
-export * from './Ninja';
+export * from './ninja';

@@ -1,23 +1,6 @@
-import type { Entity } from './Entity';
-
-export const enum Key {
-  UP = 'up',
-  DOWN = 'down',
-  LEFT = 'left',
-  RIGHT = 'right',
-}
-
-export interface WorldInfo {
-  keyPressed: Set<Key>;
-  worldHeight: number;
-  worldWidth: number;
-  calculatePosition: (element: HTMLElement, dX: number, dY: number) => Position;
-}
-
-export interface Position {
-  left: number;
-  top: number;
-}
+import { Key } from './world.types';
+import type { Entity } from './entity';
+import type { WorldInfo, Position } from './world.types';
 
 export class World {
   private isRunning = false;
@@ -108,7 +91,7 @@ export class World {
     document.addEventListener('mouseup', mouseUpHandler);
   }
 
-  private onScreenSizeChange() {
+  private onScreenSizeChange(): void {
     // Disable on small screens
     if (World.isSmallScreenSize()) {
       this.stop();

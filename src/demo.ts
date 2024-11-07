@@ -1,5 +1,5 @@
-import { Ninja } from './models/entites/Ninja';
-import { World } from './models/World';
+import { Ninja } from './models/entites/ninja';
+import { World } from './models/world';
 
 import './styles/index.scss';
 

@@ -1,12 +1,12 @@
-import { Entity, EntityConfig } from '../Entity';
-import { SpriteState } from '../State';
-
 import climbSprite from '../../assets/sprites/ninja/climb.gif';
 import fallSprite from '../../assets/sprites/ninja/fall.gif';
 import idleSprite from '../../assets/sprites/ninja/idle.gif';
 import runSprite from '../../assets/sprites/ninja/run.gif';
 import sitSprite from '../../assets/sprites/ninja/sit.gif';
 import wallGrabSprite from '../../assets/sprites/ninja/wallgrab.gif';
+import { Entity } from '../entity';
+import { SpriteState } from '../state';
+import type { EntityConfig } from '../entity.types';
 
 export class Ninja extends Entity {
   constructor(entityConfig?: Partial<EntityConfig>) {

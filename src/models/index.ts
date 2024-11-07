@@ -1,2 +1,2 @@
 export * from './entites';
-export * from './World';
+export * from './world';

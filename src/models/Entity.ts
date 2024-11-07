@@ -1,6 +1,8 @@
-import { SpriteState, State, StateToSpriteMap } from './State';
-import { Key } from './World';
-import type { WorldInfo } from './World';
+import { State, StateToSpriteMap } from './state';
+import { Key } from './world.types';
+import type { EntityConfig } from './entity.types';
+import type { SpriteState } from './state';
+import type { WorldInfo } from './world.types';
 
 const KEY_ACTION_MAP: Record<Key, State> = {
   [Key.UP]: State.MOVE_UP,
@@ -8,14 +10,6 @@ const KEY_ACTION_MAP: Record<Key, State> = {
   [Key.LEFT]: State.MOVE_LEFT,
   [Key.RIGHT]: State.MOVE_RIGHT,
 };
-
-export interface EntityConfig {
-  left: number;
-  top: number;
-  height: number;
-  width: number;
-  speed: number;
-}
 
 export abstract class Entity {
   private static DEFAULT_CONFIG: EntityConfig = {
@@ -75,7 +69,7 @@ export abstract class Entity {
     return this.left;
   }
 
-  public setLeft(left: number) {
+  public setLeft(left: number): void {
     this.left = left;
     this.element.style.left = `${left}px`;
   }
@@ -84,7 +78,7 @@ export abstract class Entity {
     return this.top;
   }
 
-  public setTop(top: number) {
+  public setTop(top: number): void {
     this.top = top;
     this.element.style.top = `${top}px`;
   }
