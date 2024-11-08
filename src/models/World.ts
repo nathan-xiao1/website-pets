@@ -1,6 +1,7 @@
 import { Key } from './world.types';
+import { getElementRectWithScroll } from './world.utils';
 import type { Entity } from './entity';
-import type { WorldInfo, Position } from './world.types';
+import type { WorldInfo, Position, ElementRect } from './world.types';
 
 export class World {
   private isRunning = false;
@@ -165,7 +166,9 @@ export class World {
     dY: number
   ): Position {
     const collidableElements = this.getCollidableElements();
-    const elementRect = element.getBoundingClientRect();
+    const elementClientRect = element.getBoundingClientRect();
+
+    const elementRect = getElementRectWithScroll(elementClientRect);
 
     let newPosition = this.calculatePositionWithCollision(
       elementRect,
@@ -183,18 +186,21 @@ export class World {
   }
 
   private calculatePositionWithCollision(
-    elementRect: DOMRect,
+    elementRect: ElementRect,
     dX: number,
     dY: number,
     collidableElements: HTMLElement[]
   ): Position {
+    const newLeft = elementRect.left + dX;
+    const newRight = elementRect.right + dX;
+    const newTop = elementRect.top + dY;
+    const newBottom = elementRect.bottom + dY;
+
     // Check if colliding with any collidable element
     const collidingElements = collidableElements.filter((collidableElement) => {
-      const collidableElementRect = collidableElement.getBoundingClientRect();
-      const newLeft = elementRect.left + dX;
-      const newRight = elementRect.right + dX;
-      const newTop = elementRect.top + dY;
-      const newBottom = elementRect.bottom + dY;
+      const collidableElementRect = getElementRectWithScroll(
+        collidableElement.getBoundingClientRect()
+      );
 
       return !(
         newLeft > collidableElementRect.right ||
@@ -208,10 +214,9 @@ export class World {
       // Check whether we will collide with any collidable element on the horizontal axis
       const willCollideHorizontally = collidingElements.some(
         (collidingElement) => {
-          const collidingElementRect = collidingElement.getBoundingClientRect();
-          const newLeft = elementRect.left + dX;
-          const newRight = elementRect.right + dX;
-
+          const collidingElementRect = getElementRectWithScroll(
+            collidingElement.getBoundingClientRect()
+          );
           // Ignore any element we don't collide with vertically
           const isOutsideVertically =
             elementRect.top >= collidingElementRect.bottom ||
@@ -230,9 +235,9 @@ export class World {
       // Check whether we will collide with any collidable element on the vertical axis
       const willCollideVertically = collidingElements.some(
         (collidingElement) => {
-          const collidingElementRect = collidingElement.getBoundingClientRect();
-          const newTop = elementRect.top + dY;
-          const newBottom = elementRect.bottom + dY;
+          const collidingElementRect = getElementRectWithScroll(
+            collidingElement.getBoundingClientRect()
+          );
 
           // Ignore any element we don't collide with horizontally
           const isOutsideHorizontally =
@@ -263,7 +268,7 @@ export class World {
   }
 
   private calculatePositionWithWorldBoundary(
-    elementRect: DOMRect,
+    elementRect: ElementRect,
     position: Position
   ): Position {
     // Check if within world boundary
@@ -313,14 +318,19 @@ export class World {
   }
 
   private static getWorldWidth(): number {
-    return document.documentElement.clientWidth;
+    return document.documentElement.clientWidth + scrollX;
   }
 
   private static getWorldHeight(): number {
-    return document.documentElement.clientHeight;
+    return document.documentElement.clientHeight + scrollY;
   }
 
   private static isSmallScreenSize(): boolean {
-    return Math.min(World.getWorldHeight(), World.getWorldWidth()) < 768;
+    return (
+      Math.min(
+        document.documentElement.clientHeight,
+        document.documentElement.clientWidth
+      ) < 768
+    );
   }
 }

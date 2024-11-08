@@ -35,7 +35,7 @@ barrier3.classList.add('collidable');
 barrier3.style.position = 'absolute';
 barrier3.style.height = '150px';
 barrier3.style.width = '150px';
-barrier3.style.top = `${screen.height - 325}px`;
+barrier3.style.top = `${screen.height}px`;
 barrier3.style.left = '500px';
 barrier3.style.background = 'white';
 container?.appendChild(barrier3);
