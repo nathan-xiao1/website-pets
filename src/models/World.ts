@@ -117,14 +117,17 @@ export class World {
 
   private handleKeyDown(ev: KeyboardEvent): void {
     switch (ev.key) {
+      case 'a':
       case 'Left':
       case 'ArrowLeft':
         this.keyPressed.add(Key.LEFT);
         break;
+      case 'd':
       case 'Right':
       case 'ArrowRight':
         this.keyPressed.add(Key.RIGHT);
         break;
+      case 'w':
       case 'Up':
       case 'ArrowUp':
         this.keyPressed.add(Key.UP);
@@ -136,14 +139,17 @@ export class World {
 
   private handleKeyUp(ev: KeyboardEvent): void {
     switch (ev.key) {
+      case 'a':
       case 'Left':
       case 'ArrowLeft':
         this.keyPressed.delete(Key.LEFT);
         break;
+      case 'd':
       case 'Right':
       case 'ArrowRight':
         this.keyPressed.delete(Key.RIGHT);
         break;
+      case 'w':
       case 'Up':
       case 'ArrowUp':
         this.keyPressed.delete(Key.UP);
