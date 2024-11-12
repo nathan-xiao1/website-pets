@@ -17,11 +17,16 @@ export interface Position {
   top: number;
 }
 
-export interface ElementRect {
+interface Rect {
   left: number;
   right: number;
   top: number;
   bottom: number;
+}
+
+export interface ElementRect extends Rect {
   width: number;
   height: number;
 }
+
+export type WorldRect = Rect;

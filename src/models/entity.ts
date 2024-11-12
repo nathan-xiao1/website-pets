@@ -1,8 +1,8 @@
 import { State, StateToSpriteMap } from './state';
-import { Key } from './world.types';
+import { Key } from './world';
 import type { EntityConfig } from './entity.types';
 import type { SpriteState } from './state';
-import type { WorldInfo } from './world.types';
+import type { WorldInfo } from './world';
 
 const KEY_ACTION_MAP: Record<Key, State> = {
   [Key.UP]: State.MOVE_UP,
