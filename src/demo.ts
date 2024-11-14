@@ -1,4 +1,4 @@
-import { Ninja } from './models/entites/ninja';
+import { Ninja } from './entites/ninja';
 import { World } from './models/world';
 
 import './styles/index.scss';

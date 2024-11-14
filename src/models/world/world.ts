@@ -6,7 +6,7 @@ import {
 } from './calculate-position';
 import { Key } from './world.types';
 import type { WorldInfo, Position, WorldRect } from './world.types';
-import type { Entity } from '../entity';
+import type { Entity } from '../entity/entity';
 
 export class World {
   private isRunning = false;
