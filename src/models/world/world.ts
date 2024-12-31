@@ -4,6 +4,7 @@ import {
   calculatePositionWithWorldBoundary,
   getElementRectWithScroll,
 } from './calculate-position';
+import { getColliableClassName } from './collidable';
 import { Key } from './world.types';
 import type { WorldInfo, Position, WorldRect } from './world.types';
 import type { Entity } from '../entity/entity';
@@ -199,7 +200,7 @@ export class World {
   }
 
   private getCollidableElements(): HTMLElement[] {
-    return Array.from(document.querySelectorAll('.collidable'));
+    return Array.from(document.querySelectorAll(`.${getColliableClassName()}`));
   }
 
   private getWorldWidth(): number {
