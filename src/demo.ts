@@ -44,7 +44,7 @@ container?.appendChild(barrier3);
 const ninja = new Ninja({
   height: 50,
   width: 50,
-  speed: 6,
+  speed: 5,
 });
 
 // The world model

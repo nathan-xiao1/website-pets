@@ -4,4 +4,5 @@ export interface EntityConfig {
   height: number;
   width: number;
   speed: number;
+  scaleSpeed: boolean;
 }

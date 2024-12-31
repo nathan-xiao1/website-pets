@@ -1,5 +1,5 @@
-import { State, StateToSpriteMap } from './state';
 import { Key } from '../world';
+import { State, StateToSpriteMap } from './state';
 import type { EntityConfig } from './entity.types';
 import type { SpriteState } from './state';
 import type { WorldInfo } from '../world';
@@ -18,6 +18,7 @@ export abstract class Entity {
     height: 100,
     width: 100,
     speed: 5,
+    scaleSpeed: true,
   };
 
   private yAcc = 0;
@@ -47,7 +48,7 @@ export abstract class Entity {
     this.element.height = config.height;
     this.element.width = config.width;
 
-    this.speed = config.speed;
+    this.speed = this.getSpeedFromConfig(config);
 
     this.setTop(config.top);
     this.setLeft(config.left);
@@ -203,5 +204,16 @@ export abstract class Entity {
   private setDirection(direction: 'left' | 'right'): void {
     this.element.style.transform =
       direction === 'left' ? 'scaleX(-1)' : 'scaleX(1)';
+  }
+
+  private getSpeedFromConfig(config: EntityConfig): number {
+    const speed = config.speed;
+
+    if (config.scaleSpeed) {
+      const screenWidth = window.innerWidth;
+      return speed * (screenWidth / 1500);
+    } else {
+      return speed;
+    }
   }
 }
