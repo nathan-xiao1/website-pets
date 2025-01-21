@@ -21,6 +21,7 @@ export class World {
     this.keyPressed = new Set();
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleKeyUp = this.handleKeyUp.bind(this);
+    this.handleWindowBlur = this.handleWindowBlur.bind(this);
 
     window.addEventListener('resize', this.onScreenSizeChange.bind(this));
   }
@@ -44,6 +45,7 @@ export class World {
     // Key input listeners
     document.addEventListener('keydown', this.handleKeyDown);
     document.addEventListener('keyup', this.handleKeyUp);
+    document.addEventListener('blur', this.handleWindowBlur);
 
     return window.requestAnimationFrame(this.tick.bind(this));
   }
@@ -58,6 +60,7 @@ export class World {
 
     document.removeEventListener('keydown', this.handleKeyDown);
     document.removeEventListener('keyup', this.handleKeyUp);
+    document.removeEventListener('blur', this.handleWindowBlur);
   }
 
   makeEntityDraggable(entity: Entity): void {
@@ -164,6 +167,10 @@ export class World {
       default:
         return;
     }
+  }
+
+  private handleWindowBlur(): void {
+    this.keyPressed.clear();
   }
 
   private calculatePosition(
